@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html{
+            height: 100%;
+        }
+        body{
+            height: 100%;
+            margin:0;
+        }
+        #app{
+            height:100%;
+        }
+        .infinite-list-container {
+            height: 100%;
+            overflow: auto;
+            position: relative;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .infinite-list-phantom {
+            position: absolute;
+            left: 0;
+            top: 0;
+            right: 0;
+            z-index: -1;
+        }
+
+        .infinite-list {
+            left: 0;
+            right: 0;
+            top: 0;
+            position: absolute;
+            text-align: center;
+        }
+
+        .infinite-list-item {
+            padding: 10px;
+            color: #555;
+            box-sizing: border-box;
+            border-bottom: 1px solid #999;
+        }
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.6.10/dist/vue.js"></script>
+</head>
+<body>
+<!--infinite-list-container 为可视区域的容器-->
+<!--infinite-list-phantom 为容器内的占位，高度为总列表高度，用于形成滚动条-->
+<!--infinite-list 为列表项的渲染区域-->
+
+<!--接着，监听infinite-list-container的scroll事件，获取滚动位置scrollTop-->
+
+<!--假定可视区域高度固定，称之为screenHeight-->
+<!--假定列表每项高度固定，称之为itemSize-->
+<!--假定列表数据称之为listData-->
+<!--假定当前滚动位置称之为scrollTop-->
+
+<!--则可推算出：-->
+
+<!--列表总高度listHeight = listData.length * itemSize-->
+<!--可显示的列表项数visibleCount = Math.ceil(screenHeight / itemSize)-->
+<!--数据的起始索引startIndex = Math.floor(scrollTop / itemSize)-->
+<!--数据的结束索引endIndex = startIndex + visibleCount-->
+<!--列表显示数据为visibleData = listData.slice(startIndex,endIndex)-->
+
+<!--当滚动后，由于渲染区域相对于可视区域已经发生了偏移，此时我需要获取一个偏移量startOffset，通过样式控制将渲染区域偏移至可视区域中。-->
+
+<!--偏移量startOffset = scrollTop - (scrollTop % itemSize);-->
+
+<div id="container" class="infinite-list-container">
+    <div class="infinite-list-phantom"></div>
+    <div class="infinite-list">
+        <!-- item-1 -->
+        <!-- item-2 -->
+        <!-- ...... -->
+        <!-- item-n -->
+    </div>
+</div>
+<div id="app">
+    <div ref="list" class="infinite-list-container" @scroll="scrollEvent($event)">
+        <div class="infinite-list-phantom" :style="{ height: listHeight + 'px' }"></div>
+        <div class="infinite-list" :style="{ transform: getTransform }">
+            <div ref="items"
+                 class="infinite-list-item"
+                 v-for="item in visibleData"
+                 :key="item.id"
+                 :style="{ height: itemSize + 'px',lineHeight: itemSize + 'px' }"
+            >{{ item.value }}</div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+  var app = new Vue({
+    el: '#app',
+    computed:{
+      //列表总高度
+      listHeight(){
+        return this.listData.length * this.itemSize;
+      },
+      //可显示的列表项数
+      visibleCount(){
+        return Math.ceil(this.screenHeight / this.itemSize)
+      },
+      //偏移量对应的style
+      getTransform(){
+        return `translate3d(0,${this.startOffset}px,0)`;
+      },
+      //获取真实显示列表数据
+      visibleData(){
+        return this.listData.slice(this.start, Math.min(this.end,this.listData.length));
+      }
+    },
+    mounted() {
+      this.screenHeight = this.$el.clientHeight;
+      this.start = 0;
+      this.end = this.start + this.visibleCount;
+
+      let d = []
+      for (let i = 0; i < 1000; i++) {
+        d.push({ id: i, value: i });
+      }
+      this.listData = d
+
+      window.addEventListener('scroll', this.scrollEvent.bind(this), true);
+    },
+    data() {
+      return {
+        //可视区域高度
+        screenHeight:0,
+        //偏移量
+        startOffset:0,
+        //起始索引
+        start:0,
+        //结束索引
+        end:null,
+        itemSize: 100,
+        listData: []
+      };
+    },
+    methods: {
+      scrollEvent() {
+        //当前滚动位置
+        let scrollTop = this.$refs.list.scrollTop;
+        console.log(scrollTop)
+        //此时的开始索引
+        this.start = Math.floor(scrollTop / this.itemSize);
+        //此时的结束索引
+        this.end = this.start + this.visibleCount;
+        //此时的偏移量
+        this.startOffset = scrollTop - (scrollTop % this.itemSize);
+      }
+    }
+  })
+</script>
+
+</body>
+</html>
