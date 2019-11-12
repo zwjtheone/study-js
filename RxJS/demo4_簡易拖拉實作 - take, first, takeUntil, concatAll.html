@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        html, body {
+            height: 100%;
+            background-color: tomato;
+            position: relative;
+        }
+
+        #drag {
+            position: absolute;
+            display: inline-block;
+            width: 100px;
+            height: 100px;
+            background-color: #fff;
+            cursor: all-scroll;
+        }
+    </style>
+</head>
+<body>
+<div id="drag"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+<script>
+  // take 是一個很簡單的 operator，顧名思義就是取前幾個元素後就結束，範例如下
+
+  // var source = Rx.Observable.interval(1000);
+  // var example = source.take(3);
+  //
+  // example.subscribe({
+  //   next: (value) => { console.log(value); },
+  //   error: (err) => { console.log('Error: ' + err); },
+  //   complete: () => { console.log('complete'); }
+  // });
+  // 0
+  // 1
+  // 2
+  // complete
+  // source : -----0-----1-----2-----3--..
+  // take(3)
+  // example: -----0-----1-----2|
+
+  // first
+  // first 會取 observable 送出的第 1 個元素之後就直接結束，行為跟 take(1) 一致。
+
+  // takeUntil
+  // 在實務上 takeUntil 很常使用到，他可以在某件事情發生時，讓一個 observable 直送出 完成(complete)訊息，範例如下
+  // var source2 = Rx.Observable.interval(1000);
+  // var example2 = source2.first();
+  //
+  // var source3 = Rx.Observable.interval(1000);
+  // var click = Rx.Observable.fromEvent(document.body, 'click');
+  // var example3 = source3.takeUntil(click);
+  //
+  // example3.subscribe({
+  //   next: (value) => { console.log(value); },
+  //   error: (err) => { console.log('Error: ' + err); },
+  //   complete: () => { console.log('complete'); }
+  // });
+  // 0
+  // 1
+  // 2
+  // 3
+  // complete (點擊body了
+  // 當 takeUntil 傳入的 observable 發送值時，原本的 observable 就會直接進入完成(complete)的狀態，並且發送完成訊息。也就是說上面這段程式碼的行為，會先每 1 秒印出一個數字(從 0 遞增)直到我們點擊 body 為止，他才會送出 complete 訊息。
+  // source : -----0-----1-----2------3--
+  // click  : ----------------------c----
+  //   takeUntil(click)
+  // example: -----0-----1-----2----|
+
+  var obs1 = Rx.Observable.interval(1000).take(5);
+  var obs2 = Rx.Observable.interval(500).take(2);
+  var obs3 = Rx.Observable.interval(2000).take(1);
+
+  var source4 = Rx.Observable.of(obs1, obs2, obs3);
+
+  var example4 = source4.concatAll();
+
+  example4.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 1
+  // 2
+  // 3
+  // 4
+  // 0
+  // 1
+  // 0
+  // complete
+
+  const dragDOM = document.getElementById('drag');
+  const body = document.body;
+
+  const mouseDown = Rx.Observable.fromEvent(dragDOM, 'mousedown');
+  const mouseUp = Rx.Observable.fromEvent(body, 'mouseup');
+  const mouseMove = Rx.Observable.fromEvent(body, 'mousemove');
+
+  mouseDown
+    .map(event => mouseMove.takeUntil(mouseUp))//當 mouseDown 時，轉成 mouseMove 的事件,mouseMove 要在mouseUp 后结束
+    .concatAll()//用concatAll()摊平source成一维。
+    .map(event => ({ x: event.clientX, y: event.clientY }))//用map 把mousemove event 转成x,y 的位置，并且订阅。
+    .subscribe(pos => {
+      dragDOM.style.left = pos.x + 'px';
+      dragDOM.style.top = pos.y + 'px';
+    })
+</script>
+</body>
+</html>

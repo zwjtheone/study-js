@@ -1,0 +1,169 @@
+<body></body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+<script>
+  // of
+  // from
+  // fromEvent
+  // fromPromise
+  // never
+  // empty
+  // throw
+  // interval
+  // timer
+
+  var source_1 = Rx.Observable.of('Jerry', 'Anna');
+
+  source_1.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  });
+
+  // Jerry
+  // Anna
+  // complete!
+
+  var arr_2 = ['Jerry', 'Anna', 2016, 2017, '30 days']
+  var source_2 = Rx.Observable.from(arr_2);
+
+  source_2.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  });
+
+  // Jerry
+  // Anna
+  // 2016
+  // 2017
+  // 30 days
+  // complete!
+
+  var source_3 = Rx.Observable.from('鐵人賽');
+
+  source_3.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  });
+  // 鐵
+  // 人
+  // 賽
+  // complete!
+
+
+    // promise
+  // 用fromPromise 也可以
+  var source_4 = Rx.Observable
+    .from(new Promise((resolve, reject) => {
+      setTimeout(() => {
+        resolve('Hello RxJS!');
+      },3000)
+    }))
+
+  source_4.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  });
+
+  // Hello RxJS!
+  // complete!
+
+
+  var source_5 = Rx.Observable.fromEvent(document.body, 'click');
+
+  source_5.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log(error)
+    }
+  });
+
+  // MouseEvent {...}
+
+  var source_6 = Rx.Observable.throw('Oop!');
+
+  source_6.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log('Throw Error: ' + error)
+    }
+  });
+  // Throw Error: Oop!
+
+  var source_7 = Rx.Observable.interval(1000);
+
+  source_7.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log('Throw Error: ' + error)
+    }
+  });
+  // 0
+  // 1
+  // 2
+  // ...
+
+  var source_8 = Rx.Observable.timer(1000, 5000);
+
+  var subscription = source_8.subscribe({
+    next: function(value) {
+      console.log(value)
+    },
+    complete: function() {
+      console.log('complete!');
+    },
+    error: function(error) {
+      console.log('Throw Error: ' + error)
+    }
+  });
+  // 0
+  // 1
+  // 2 ...
+
+  // 其实在订阅observable后，会回传一个subscription物件，这个物件具有释放资源的unsubscribe方法，范例如下
+  setTimeout(() => {
+    subscription.unsubscribe() // 停止訂閱(退訂)， RxJS 4.x 以前的版本用 dispose()
+  }, 5000);
+
+</script>

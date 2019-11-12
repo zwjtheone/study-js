@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+<script>
+  // Operators 就是一個個被附加到 Observable 型別的函式，例如像是 map, filter, contactAll... 等等，所有這些函式都會拿到原本的 observable 並回傳一個新的 observable，就像有點像下面這個樣子
+
+  // mapTo 可以把傳進來的值改成一個固定的值，如下
+
+  var source = Rx.Observable.interval(1000);
+  var newest = source.mapTo(2);
+
+  newest.subscribe(console.log);
+  // 2
+  // 2
+  // 2
+  // 2..
+  // source: -----0-----1-----2-----3--...
+  // mapTo(2)
+  // newest: -----2-----2-----2-----2--...
+
+  // filter
+  var source = Rx.Observable.interval(1000);
+  var newest = source.filter(x => x % 2 === 0);
+
+  newest.subscribe(console.log);
+  // 0
+  // 2
+  // 4
+  // 6..
+  // source: -----0-----1-----2-----3-----4-...
+  // filter(x => x % 2 === 0)
+  // newest: -----0-----------2-----------4-...
+</script>
+
+</body>
+</html>
