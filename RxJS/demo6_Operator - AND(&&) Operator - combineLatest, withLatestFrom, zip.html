@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<script>
+    // 结合每个Observable最后的值
+  var source = Rx.Observable.interval(500).take(3);
+  var newest = Rx.Observable.interval(300).take(6);
+
+  var example = source.combineLatest(newest, (x, y) => x + y);
+
+  example.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 1
+  // 2
+  // 3
+  // 4
+  // 5
+  // 6
+  // 7
+  // complete
+  // source : ----0----1----2|
+  // newest : --0--1--2--3--4--5|
+
+  // combineLatest(newest, (x, y) => x + y);
+
+  // example: ----01--23-4--(56)--7|
+
+    //zip  zip 會取每個 observable 相同順位的元素並傳入 callback，也就是說每個 observable 的第 n 個元素會一起被傳入 callback
+    var source2 = Rx.Observable.interval(500).take(3);
+    var newest2 = Rx.Observable.interval(300).take(6);
+
+    var example3 = source2.zip(newest2, (x, y) => x + y);
+
+    example3.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // 0
+    // 2
+    // 4
+    // complete
+
+    // source : ----0----1----2|
+    // newest : --0--1--2--3--4--5|
+    // zip(newest, (x, y) => x + y)
+    // example: ----0----2----4|
+
+    var source3 = Rx.Observable.from('hello');
+    var source4 = Rx.Observable.interval(100);
+
+    var example4 = source3.zip(source4, (x, y) => x);
+
+    // source : (hello)|
+    // source2: -0-1-2-3-4-...
+    // zip(source2, (x, y) => x)
+    // example: -h-e-l-l-o|
+
+    var main = Rx.Observable.from('hello').zip(Rx.Observable.interval(500), (x, y) => x);
+    var some = Rx.Observable.from([0,1,0,0,0,1]).zip(Rx.Observable.interval(300), (x, y) => x);
+
+    var example = main.withLatestFrom(some, (x, y) => {
+      return y === 1 ? x.toUpperCase() : x;
+    });
+
+    example.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+
+    // main   : ----h----e----l----l----o|
+    // some   : --0--1--0--0--0--1|
+
+    // withLatestFrom(some, (x, y) =>  y === 1 ? x.toUpperCase() : x);
+
+    // example: ----h----e----l----L----O|
+
+    // main送出了h，此时some上一次送出的值为0，把这两个参数传入callback得到h。
+    // main送出了e，此时some上一次送出的值为0，把这两个参数传入callback得到e。
+    // main送出了l，此时some上一次送出的值为0，把这两个参数传入callback得到l。
+    // main送出了l，此时some上一次送出的值为1，把这两个参数传入callback得到L。
+    // main送出了o，此时some上一次送出的值为1，把这两个参数传入callback得到O。
+    // withLatestFrom 很常用在一些checkbox 型的功能，例如说一个编辑器，我们开启粗体后，打出来的字就都要变粗体，粗体就像是some observable，而我们打字就是main observable。
+</script>
+</body>
+</html>
