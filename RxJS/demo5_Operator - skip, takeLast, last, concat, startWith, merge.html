@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+<body>
+<script>
+  // 我们昨天介绍了take可以取前几个送出的元素，今天介绍可以略过前几个送出元素的operator: skip，范例如下：
+
+  var source = Rx.Observable.interval(1000);
+  var example = source.skip(3);
+
+  example.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 3
+  // 4
+  // 5...
+  // source : ----0----1----2----3----4----5--....
+  // skip(3)
+  // example: -------------------3----4----5--...
+
+  // takeLast
+  var source2 = Rx.Observable.interval(1000).take(6);
+  var example2 = source2.takeLast(2);
+
+  example2.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 4
+  // 5
+  // complete
+
+  // source : ----0----1----2----3----4----5|
+  // takeLast(2)
+  // example: ------------------------------(45)|
+
+  // last 最后一个
+  var source3 = Rx.Observable.interval(1000).take(6);
+  var example3 = source3.last();
+
+  example3.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 5
+  // complete
+
+  // source : ----0----1----2----3----4----5|
+  // last()
+  // example: ------------------------------(5)|
+
+  // concat 将一阶的Observable 合并
+  var source4 = Rx.Observable.interval(1000).take(3);
+  var source5 = Rx.Observable.of(3)
+  var source6 = Rx.Observable.of(4,5,6)
+  var example4 = source4.concat(source5, source6);
+  // Rx.Observable.concat(source, source2, source3); // 静态方法
+  example4.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 1
+  // 2
+  // 3
+  // 4
+  // 5
+  // 6
+  // complete
+  // source : ----0----1----2|
+  // source2: (3)|
+  // source3: (456)|
+  // concat()
+  // example: ----0----1----2(3456)|
+
+  // startWith 初始化值 这个operator 很常被用来保存程式的起始状态！
+  var source7 = Rx.Observable.interval(1000);
+  var example5 = source7.startWith(0);
+
+  example5.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 0
+  // 1
+  // 2
+  // 3...
+  // source : ----0----1----2----3--...
+  // startWith(0)
+  // example: (0)----0----1----2----3--...
+
+
+  // merge 合并 不过不是追加，在时间线上按时间点合并
+  var source8 = Rx.Observable.interval(500).take(3);
+  var source9 = Rx.Observable.interval(300).take(6);
+  var example6= source8.merge(source9);
+  // var example6 = Rx.Observable.merge(source, source2); // 静态方法
+  example6.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 0
+  // 1
+  // 2
+  // 1
+  // 3
+  // 2
+  // 4
+  // 5
+  // complete
+  // source : ----0----1----2|
+  // source2: --0--1--2--3--4--5|
+  // merge()
+  // example: --0-01--21-3--(24)--5|
+
+  // var stopVideo = Rx.Observable.merge(stopButton, endButton);
+
+  // stopVideo.subscribe(() => {
+    // 暫停播放影片
+  // })
+</script>
+</body>
+</html>
