@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<script>
+    // scan 类似 reducer
+
+    var arr = [1, 2, 3, 4];
+    var result = arr.reduce((origin, next) => {
+      console.log(origin)
+      return origin + next
+    }, 0);
+
+    console.log(result)
+
+    // scan
+    var source = Rx.Observable.from('hello')
+      .zip(Rx.Observable.interval(600), (x, y) => x);
+
+    var example = source.scan((origin, next) => origin + next, '');
+
+    example.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // h
+    // he
+    // hel
+    // hell
+    // hello
+    // complete
+    // source : ----h----e----l----l----o|
+    // scan((origin, next) => origin + next, '')
+    // example: ----h----(he)----(hel)----(hell)----(hello)|
+    const addButton = document.getElementById('addButton');
+    const minusButton = document.getElementById('minusButton');
+    const state = document.getElementById('state');
+
+    const addClick = Rx.Observable.fromEvent(addButton, 'click').mapTo(1);
+    const minusClick = Rx.Observable.fromEvent(minusButton, 'click').mapTo(-1);
+
+    const numberState = Rx.Observable.empty()
+      .startWith(0)
+      .merge(addClick, minusClick)
+      .scan((origin, next) => origin + next, 0)
+
+    numberState
+      .subscribe({
+        next: (value) => { state.innerHTML = value;},
+        error: (err) => { console.log('Error: ' + err); },
+        complete: () => { console.log('complete'); }
+      });
+
+    // buffer -------------------------------------------------------------------
+
+    var source2 = Rx.Observable.interval(300);
+    var source3 = Rx.Observable.interval(1000);
+    var example2 = source2.buffer(source3);
+
+    example2.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // [0,1,2]
+    // [3,4,5]
+    // [6,7,8]...
+    // source : --0--1--2--3--4--5--6--7..
+    //   source2: ---------0---------1--------...
+    // buffer(source2)
+    // example: ---------([0,1,2])---------([3,4,5])
+
+    // 用时间来分割buffer
+    var source4 = Rx.Observable.interval(300);
+    var example3 = source4.bufferTime(1000);
+
+    example3.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // [0,1,2]
+    // [3,4,5]
+    // [6,7,8]...
+
+    // 用数量来分隔buffer
+    var source5 = Rx.Observable.interval(300);
+    var example4 = source5.bufferCount(3);
+
+    example4.subscribe({
+      next: (value) => { console.log(value); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // [0,1,2]
+    // [3,4,5]
+    // [6,7,8]...
+
+    const button = document.getElementById('demo');
+    const click = Rx.Observable.fromEvent(button, 'click')
+    const example5 = click
+      .bufferTime(500)
+      .filter(arr => arr.length >= 2);
+
+    example5.subscribe({
+      next: (value) => { console.log('success'); },
+      error: (err) => { console.log('Error: ' + err); },
+      complete: () => { console.log('complete'); }
+    });
+    // 这里我们只有在500毫秒内连点两下，才能成功印出'success'，这个功能在某些特殊的需求中非常的好用，也能用在批次处理来降低request传送的次数！
+</script>
+</body>
+</html>

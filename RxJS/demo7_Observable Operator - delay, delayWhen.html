@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<script>
+  var source = Rx.Observable.interval(300).take(5);
+
+  var example = source.delay(500);
+
+  example.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // 0
+  // 1
+  // 2
+  // 3
+  // 4
+  // source : --0--1--2--3--4|
+  // delay(500)
+  // example: -------0--1--2--3--4|
+
+  var source2 = Rx.Observable.interval(300).take(5);
+
+  var example2 = source2.delay(new Date(new Date().getTime() + 1000));
+
+  example2.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+
+  // delayWhen 能做到对每个元素延迟
+  var source3 = Rx.Observable.interval(300).take(5);
+
+  var example3 = source3
+    .delayWhen(
+      x => Rx.Observable.empty().delay(100 * x * x)
+    );
+
+  example3.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // source : --0--1--2--3--4|
+  // .delayWhen(x => Rx.Observable.empty().delay(100 * x * x));
+  // example: --0---1----2-----3-----4|
+</script>
+</body>
+</html>
