@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<script>
+  // distinct
+  // 去掉重复值
+  // RxJS 内部实现一个SET
+  var source = Rx.Observable.from(['a', 'b', 'c', 'a', 'b'])
+    .zip(Rx.Observable.interval(300), (x, y) => x);
+  var example = source.distinct()
+  // 也可以传入一个callback
+  // var example = source.distinct((x) => {
+  //   return x.value
+  // });
+  example.subscribe({
+    next: (value) => {
+      console.log(value);
+    },
+    error: (err) => {
+      console.log('Error: ' + err);
+    },
+    complete: () => {
+      console.log('complete');
+    }
+  });
+  // a
+  // b
+  // c
+  // complete
+  // source : --a--b--c--a--b|
+  // distinct()
+  // example: --a--b--c------|
+
+  // flushes 参数
+  var source2 = Rx.Observable.from(['a', 'b', 'c', 'a', 'c'])
+    .zip(Rx.Observable.interval(300), (x, y) => x);
+  var flushes2 = Rx.Observable.interval(1300);
+  var example2 = source2.distinct(null, flushes2);
+
+  example2.subscribe({
+    next: (value) => {
+      console.log(value);
+    },
+    error: (err) => {
+      console.log('Error: ' + err);
+    },
+    complete: () => {
+      console.log('complete');
+    }
+  });
+  // a
+  // b
+  // c
+  // c
+  // complete
+  // source : --a--b--c--a--c|
+  // flushes: ------------0---...
+  // distinct(null, flushes);
+  // example: --a--b--c-----c|
+
+
+  // distinctUntilChanged
+
+  // 区别就是只缓存一个值
+  var source3 = Rx.Observable.from(['a', 'b', 'c', 'c', 'b'])
+    .zip(Rx.Observable.interval(300), (x, y) => x);
+  var example3 = source3.distinctUntilChanged()
+
+  example3.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // a
+  // b
+  // c
+  // b
+  // complete
+  // source : --a--b--c--c--b|
+  // distinctUntilChanged()
+  // example: --a--b--c-----b|
+</script>
+</body>
+</html>
