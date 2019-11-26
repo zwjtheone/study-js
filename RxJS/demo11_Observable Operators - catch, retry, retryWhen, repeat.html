@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<div id="title"></div>
+<script>
+  // catch
+  // 抓取错误
+  // catch 可以回傳一個新的 Observable、Promise、Array 或任何 Iterable 的物件，來傳送之後的元素。
+  var source = Rx.Observable.from(['a','b','c','d',2])
+    .zip(Rx.Observable.interval(500), (x,y) => x);
+
+  var example = source
+    .map(x => x.toUpperCase())
+    .catch(error => Rx.Observable.of('h'));
+  // .catch(error => Rx.Observable.empty()); // 返回empty()中断操作
+  // .catch((error, obs) => obs); // 第二个参数 会回传当前的observable 来做到重新执行
+
+  // source : ----a----b----c----d----2|
+  // map(x => x.toUpperCase())
+  // ----a----b----c----d----X|
+  // catch((error, obs) => obs)
+  // example: ----a----b----c----d--------a----b----c----d--..
+
+  example.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // source : ----a----b----c----d----2|
+  // map(x => x.toUpperCase())
+  // ----a----b----c----d----X|
+  // catch(error => Rx.Observable.of('h'))
+  // example: ----a----b----c----d----h|
+
+    // retry 重试
+  // 在错误的时候重试
+// 这种无限的retry会放在即时同步的重新连接，让我们在连线断掉后，不断的尝试。另外我们也可以设定只尝试几次
+  var source2 = Rx.Observable.from(['a','b','c','d',2])
+    .zip(Rx.Observable.interval(500), (x,y) => x);
+
+  var example2 = source2
+    .map(x => x.toUpperCase())
+    .retry();
+//  .retry(1); // 传入参数设置重试次数
+
+  example2.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // retryWhen
+
+  var source3= Rx.Observable.from(['a','b','c','d',2])
+    .zip(Rx.Observable.interval(500), (x,y) => x);
+
+  var example3 = source3
+    .map(x => x.toUpperCase())
+    .retryWhen(errorObs => errorObs.delay(1000));
+
+  example3.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+  // source : ----a----b----c----d----2|
+  // map(x => x.toUpperCase())
+  // ----a----b----c----d----X|
+  // retryWhen(errorObs => errorObs.delay(1000))
+  // example: ----a----b----c----d-------------------a----b----c----d----...、
+
+    //.retryWhen(errorObs => errorObs.map(err => fetch('...')));
+    // 通常是发送一个错误收集的api
+
+    // repeat
+  var source4 = Rx.Observable.from(['a','b','c'])
+    .zip(Rx.Observable.interval(500), (x,y) => x);
+
+  var example4 = source4.repeat();
+
+  example4.subscribe({
+    next: (value) => { console.log(value); },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+
+  const title = document.getElementById('title');
+
+  var source5 = Rx.Observable.from(['a','b','c','d',2])
+    .zip(Rx.Observable.interval(500), (x,y) => x)
+    .map(x => x.toUpperCase());
+  // 通常 source 會是建立即時同步的連線，像是 web socket
+
+  var example5 = source5.catch(
+    (error, obs) => Rx.Observable.empty()
+      .startWith('連線發生錯誤： 5秒後重連')
+      .concat(obs.delay(5000))
+  );
+
+  example5.subscribe({
+    next: (value) => { title.innerText = value },
+    error: (err) => { console.log('Error: ' + err); },
+    complete: () => { console.log('complete'); }
+  });
+</script>
+</body>
+</html>
