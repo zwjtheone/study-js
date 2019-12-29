@@ -7,6 +7,10 @@
 <body>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
 <script>
+  // 延迟运算
+  // 渐进式取值
+  // 每个元素送出后就是运算到底，在这个过程中不会等待其他的元素运算。这就是渐进式取值的特性，不知道读者们还记不记得我们在讲Iterator 跟Observer 时，就特别强调这两个Pattern 的共同特性是渐进式取值，而我们在实作Iterator 的过程中其实就能看出这个特性的运作方式
+
   // Operators 就是一個個被附加到 Observable 型別的函式，例如像是 map, filter, contactAll... 等等，所有這些函式都會拿到原本的 observable 並回傳一個新的 observable，就像有點像下面這個樣子
 
   // mapTo 可以把傳進來的值改成一個固定的值，如下

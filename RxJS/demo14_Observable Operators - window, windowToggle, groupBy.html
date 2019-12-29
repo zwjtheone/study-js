@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+    <style>
+        body {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div id="title"></div>
+<script>
+  /*
+  window （分组）
+   */
+  // var click = Rx.Observable.fromEvent(document, 'click');
+  // var source = Rx.Observable.interval(1000);
+  // var example = click.window(source)
+  //
+  // example
+  //   .map(innerObservable => {
+  //     console.log(innerObservable)
+  //     return innerObservable.count()
+  //   })
+  //   .switch()
+  //   .subscribe(console.log);
+  // source : ---------0---------1---------2--...
+  // click  : --cc---cc----c-c----------------...
+  // window(source)
+  // example: o--------o---------o---------o--..
+  // \        \         \         \
+  //         -cc---cc|---c-c---|---------|--..
+  // count()
+  // : o--------o---------o---------o--
+  //        \        \         \         \
+  //         -------4|--------2|--------0|--..
+  // switch()
+  // : ---------4---------2---------0--...
+
+    /*
+    windowToggle
+    windowToggle 不像window 只能控制内部observable 的结束，windowToggle 可以传入两个参数，第一个是开始的observable，第二个是一个callback 可以回传一个结束的observable，让我们来看范例
+     */
+  // var source = Rx.Observable.interval(1000);
+  // var mouseDown = Rx.Observable.fromEvent(document, 'mousedown');
+  // var mouseUp = Rx.Observable.fromEvent(document, 'mouseup');
+  //
+  // var example = source
+  //   .windowToggle(mouseDown, () => mouseUp)
+  //   .switch();
+  //
+  // example.subscribe(console.log);
+  // source   : ----0----1----2----3----4----5--...
+  //
+  // mouseDown: -------D------------------------...
+  // mouseUp  : ---------------------------U----...
+  //
+  // windowToggle(mouseDown, () => mouseUp~~~~~)
+  //
+  // : -------o-------------------------...~
+  // \
+  //                  -1----2----3----4--|
+  // switch()
+  //   example  : ---------1----2----3----4---------...
+
+    /*
+    groupBy
+     */
+  var source = Rx.Observable.interval(300).take(5);
+
+  var example = source
+    .groupBy(x => x % 2);
+
+  example.subscribe(console.log);
+  // source : ---0---1---2---3---4|
+  // groupBy(x => x % 2)
+  // example: ---o---o------------|
+  //           \   \
+  // \   1-------3----|
+  // 0-------2-------4|
+</script>
+</body>
+</html>

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+</head>
+<body>
+<div id="title"></div>
+<script>
+  // 合并 队列执行
+  //但 concatAll 會一個一個處理，一定是等前一個 observable 完成(complete)才會處理下一個 observable，因為現在送出 observable 是無限的永遠不會完成(complete)，就導致他永遠不會處理第二個送出的 observable!
+  // var click = Rx.Observable.fromEvent(document.body, 'click');
+  // var source = click.map(e => Rx.Observable.interval(1000));
+  //
+  // var example = source.concatAll();
+  // example.subscribe({
+  //   next: (value) => { console.log(value); },
+  //   error: (err) => { console.log('Error: ' + err); },
+  //   complete: () => { console.log('complete'); }
+  // });
+  // click  : ---------c-c------------------c--..
+  // map(e => Rx.Observable.interval(1000))
+  // source : ---------o-o------------------o--..
+  // \ \
+  // \ ----0----1----2----3----4--...
+  // ----0----1----2----3----4--...
+  // concatAll()
+  // example: ----------------0----1----2----3----4--..
+
+
+  // switch
+  // var click = Rx.Observable.fromEvent(document.body, 'click');
+  // var source = click.map(e => Rx.Observable.interval(1000));
+  //
+  // var example = source.switch();
+  // example.subscribe({
+  //   next: (value) => {
+  //     console.log(value);
+  //   },
+  //   error: (err) => {
+  //     console.log('Error: ' + err);
+  //   },
+  //   complete: () => {
+  //     console.log('complete');
+  //   }
+  // });
+  // click  : ---------c-c------------------c--..
+  // map(e => Rx.Observable.interval(1000))
+  // source : ---------o-o------------------o--..
+  // \ \                  \----0----1--...
+  // \ ----0----1----2----3----4--...
+  // ----0----1----2----3----4--...
+  // switch()
+  //   example: -----------------0----1----2--------0----1--...
+
+  // 在新的 observable 送出後直接處理新的 observable 不管前一個 observable 是否完成，每當有新的 observable 送出就會直接把舊的 observable 退訂(unsubscribe)，永遠只處理最新的 observable!
+
+  //mergeAll
+  var click = Rx.Observable.fromEvent(document.body, 'click');
+  var source = click.map(e => Rx.Observable.interval(1000));
+
+  var example = source.mergeAll();
+  example.subscribe({
+    next: (value) => {
+      console.log(value);
+    },
+    error: (err) => {
+      console.log('Error: ' + err);
+    },
+    complete: () => {
+      console.log('complete');
+    }
+  });
+  // click  : ---------c-c------------------c--..
+  // map(e => Rx.Observable.interval(1000))
+  // source : ---------o-o------------------o--..
+  // \ \                  \----0----1--...
+  // \ ----0----1----2----3----4--...
+  // ----0----1----2----3----4--...
+  // switch()
+  //   example: ----------------00---11---22---33---(04)4--...
+</script>
+</body>
+</html>
