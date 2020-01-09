@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/rxjs/5.0.1/Rx.js"></script>
+    <style>
+        body {
+            height: 100vh;
+        }
+    </style>
+</head>
+<body>
+<div id="title"></div>
+<script>
+  var source = Rx.Observable.interval(1000)
+    .do(x => console.log('send: ' + x))
+    .multicast(new Rx.Subject())
+    .refCount(); // 立即触发
+
+  // 不加refCount 用connect触发
+  // source.connect();
+
+  //publish 等价 multicast
+  // var source = Rx.Observable.interval(1000)
+  //   .publish()
+  //   .refCount();
+
+  // var source = Rx.Observable.interval(1000)
+  //   .publishReplay(1)
+  //   .refCount();
+
+  // var source = Rx.Observable.interval(1000)
+  //             .multicast(new Rx.ReplaySubject(1))
+  //             .refCount();
+
+  // var source = Rx.Observable.interval(1000)
+  //   .publishBehavior(0)
+  //   .refCount();
+
+  // var source = Rx.Observable.interval(1000)
+  //             .multicast(new Rx.BehaviorSubject(0))
+  //             .refCount();
+
+  /*
+  另外publish + refCount 可以在简写成share
+   */
+  // var source = Rx.Observable.interval(1000)
+  //   .share();
+
+  // var source = Rx.Observable.interval(1000)
+  //             .publish()
+  //             .refCount();
+
+  // var source = Rx.Observable.interval(1000)
+  //             .multicast(new Rx.Subject())
+  //             .refCount();
+
+  var observerA = {
+    next: value => console.log('A next: ' + value),
+    error: error => console.log('A error: ' + error),
+    complete: () => console.log('A complete!')
+  }
+
+  var observerB = {
+    next: value => console.log('B next: ' + value),
+    error: error => console.log('B error: ' + error),
+    complete: () => console.log('B complete!')
+  }
+
+  var subscriptionA = source.subscribe(observerA);
+  // 訂閱數 0 => 1
+
+  var subscriptionB;
+  setTimeout(() => {
+    subscriptionB = source.subscribe(observerB);
+    // 訂閱數 0 => 2
+  }, 1000);
+</script>
+</body>
+</html>
