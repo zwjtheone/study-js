@@ -5,4 +5,14 @@ const basicNum = 0;
 function add(a, b) {
     return a + b;
 }
+class dddd {
+    constructor(props) {
+        // @ts-ignore
+        this.eee = 1;
+    }
+    sdkajskd() {
+        const dd = 1;
+        console.log(dd);
+    }
+}
 exports.default = add;
